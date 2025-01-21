@@ -44,7 +44,7 @@ function startRecognition() {
   };
 
   recognition.onresult = (event) => {
-    outputElement.textContent = mapTranscriptionEvent(event);
+    mapTranscriptionEvent(event);
   };
 
   recognition.onerror = (event) => {
@@ -54,26 +54,36 @@ function startRecognition() {
     }
   };
 
-  recognition.onend = () => {
-    if (state === LISTENING_STATE) {
-      restartRecognition();
-    }
-  };
+  recognition.onspeechend = () => restart("onspeechend");
+  recognition.onsoundend = () => restart("onsoundend");
+  recognition.onaudioend = () => restart("onaudioend");
+  recognition.onend = () => restart("onend");
 
   recognition.start();
 }
 
+function restart(from) {
+  console.log(from);
+
+  if (state === LISTENING_STATE) {
+    console.log("Restarting...");
+    restartRecognition();
+  }
+}
 /**
  *
  * @param {any} event
- * @returns {string}
  */
 function mapTranscriptionEvent(event) {
-  let interimTranscript = "";
+  outputElement.textContent = "";
   for (const result of event.results) {
-    interimTranscript += result[0].transcript;
+    console.log(result[0].transcript);
+    if (result.isFinal) {
+      outputElement.textContent += result[0].transcript + ". ";
+    } else {
+      outputElement.textContent += result[0].transcript;
+    }
   }
-  return interimTranscript;
 }
 
 function stopRecognition() {
